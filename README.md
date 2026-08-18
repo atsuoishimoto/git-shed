@@ -29,7 +29,7 @@ one shed. `git-shed` never looks inside a shed.
 ## Install
 
 ```bash
-pip install .
+uv tool install git-shed
 ```
 
 This puts `git-shed` on `PATH`, which is all Git needs to dispatch `git shed`.
