@@ -38,14 +38,14 @@ def test_sync_links_every_matching_shed(repo, home, capsys):
     for name in ("company", "backend"):
         link = repo / ".shed" / name
         assert link.is_symlink()
-        assert Path(os.readlink(link)) == home / ".shed" / name
-        assert (home / ".shed" / name).is_dir()
+        assert Path(os.readlink(link)) == home / ".git-shed" / "sheds" / name
+        assert (home / ".git-shed" / "sheds" / name).is_dir()
 
     assert "/.shed/" in exclude_text(repo)
     out = capsys.readouterr().out
     assert out.startswith("Linked:\n")
-    assert f"  .shed/backend -> {home / '.shed' / 'backend'}" in out
-    assert f"  .shed/company -> {home / '.shed' / 'company'}" in out
+    assert f"  .shed/backend -> {home / '.git-shed' / 'sheds' / 'backend'}" in out
+    assert f"  .shed/company -> {home / '.git-shed' / 'sheds' / 'company'}" in out
 
 
 def test_sync_is_idempotent(repo, capsys):
@@ -66,7 +66,7 @@ def test_sync_drops_links_that_no_longer_match(repo, home, config_file, capsys):
     assert main(["sync"]) == 0
 
     assert not (repo / ".shed" / "backend").exists()
-    assert (home / ".shed" / "backend").is_dir()  # data survives
+    assert (home / ".git-shed" / "sheds" / "backend").is_dir()  # data survives
     assert "Unlinked:\n  .shed/backend\n" in capsys.readouterr().out
 
 
@@ -99,7 +99,8 @@ def test_sync_warns_when_a_shed_cannot_be_linked(repo, home, capsys):
         "git shed: warning: .shed/company is not a link, shed not linked"
         in captured.err
     )
-    assert f"Linked:\n  .shed/backend -> {home / '.shed' / 'backend'}\n" in captured.out
+    backend = home / ".git-shed" / "sheds" / "backend"
+    assert f"Linked:\n  .shed/backend -> {backend}\n" in captured.out
 
 
 def test_sync_repoints_a_link_to_the_conventional_path(repo, home, capsys):
@@ -112,10 +113,11 @@ def test_sync_repoints_a_link_to_the_conventional_path(repo, home, capsys):
 
     assert main(["sync"]) == 0
 
-    assert Path(os.readlink(mountpoint / "company")) == home / ".shed" / "company"
+    company = home / ".git-shed" / "sheds" / "company"
+    assert Path(os.readlink(mountpoint / "company")) == company
     assert elsewhere.is_dir()
     assert (
-        f"Relinked:\n  .shed/company -> {home / '.shed' / 'company'}\n"
+        f"Relinked:\n  .shed/company -> {home / '.git-shed' / 'sheds' / 'company'}\n"
         in capsys.readouterr().out
     )
 
@@ -207,7 +209,8 @@ def test_list_all_outside_a_repository(
 
 def test_path(repo, home, capsys):
     assert main(["path", "company"]) == 0
-    assert capsys.readouterr().out.strip() == str(home / ".shed" / "company")
+    company = home / ".git-shed" / "sheds" / "company"
+    assert capsys.readouterr().out.strip() == str(company)
 
 
 def test_path_of_an_unknown_shed(repo, capsys):
@@ -258,7 +261,7 @@ def test_remove_keeps_the_data(repo, home, capsys):
 
     assert configlib.load(configlib.config_path()).get("backend") is None
     assert not (repo / ".shed" / "backend").exists()
-    assert (home / ".shed" / "backend").is_dir()
+    assert (home / ".git-shed" / "sheds" / "backend").is_dir()
     out = capsys.readouterr().out
     assert "Removed shed" in out and "Data kept at" in out
 
@@ -281,7 +284,8 @@ def test_sync_without_a_remote_matches_the_directory_name(
     assert main(["sync"]) == 0
 
     assert (root / ".shed" / "notes").is_symlink()
-    assert f"  .shed/notes -> {home / '.shed' / 'notes'}" in capsys.readouterr().out
+    notes = home / ".git-shed" / "sheds" / "notes"
+    assert f"  .shed/notes -> {notes}" in capsys.readouterr().out
 
 
 def test_status_without_a_remote(make_repo, home, config_file, monkeypatch, capsys):
@@ -416,13 +420,15 @@ def test_status_lists_every_remote(repo, capsys):
 
 def test_sync_stores_sheds_under_the_override(repo, tmp_path, monkeypatch, capsys):
     root = tmp_path / "elsewhere"
+    root.mkdir()
+    (root / "config.toml").write_text(CONFIG, encoding="utf-8")
     monkeypatch.setenv("GIT_SHED_ROOT", str(root))
 
     assert main(["sync"]) == 0
 
-    assert (root / "company").is_dir()
-    assert Path(os.readlink(repo / ".shed" / "company")) == root / "company"
-    assert f"  .shed/company -> {root / 'company'}" in capsys.readouterr().out
+    assert (root / "sheds" / "company").is_dir()
+    assert Path(os.readlink(repo / ".shed" / "company")) == root / "sheds" / "company"
+    assert f"  .shed/company -> {root / 'sheds' / 'company'}" in capsys.readouterr().out
 
 
 def test_a_relative_override_is_an_error(repo, monkeypatch, capsys):

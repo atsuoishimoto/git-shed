@@ -7,8 +7,9 @@ Guidance for AI assistants working in this repository.
 `git-shed` is a Python CLI tool — a repository-aware link manager for local
 files kept outside Git. It resolves the canonical identity of a repository's
 Git remotes (e.g. `github.com/acme/api`), matches them against shed
-definitions in `~/.config/git-shed/config.toml`, creates storage directories
-under `~/.shed/<name>` (overridable via `GIT_SHED_ROOT`), and links them into
+definitions in `~/.git-shed/config.toml`, creates storage directories
+under `~/.git-shed/sheds/<name>` (the root is overridable via `GIT_SHED_ROOT`,
+which moves the config file too), and links them into
 the repository as `.shed/<name>` (symlinks on Linux/macOS, directory junctions
 on Windows). Installed as `git-shed` on PATH so Git dispatches `git shed` to it.
 
@@ -78,7 +79,7 @@ on Ubuntu. Tests shell out to real `git`, so a `user.name`/`user.email`/
 
 These are product guarantees, documented in README "Safety":
 
-- Never delete shed data (`~/.shed/<name>`); only links/junctions in
+- Never delete shed data (`~/.git-shed/sheds/<name>`); only links/junctions in
   `repo/.shed/` may be removed.
 - A real (non-link) file or directory inside `.shed/` is left untouched,
   with a warning.

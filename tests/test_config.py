@@ -150,7 +150,7 @@ def test_invalid_names(name):
 
 def test_paths_follow_home(home, config_file):
     assert configlib.config_path() == config_file
-    assert configlib.shed_path("company") == home / ".shed" / "company"
+    assert configlib.shed_path("company") == home / ".git-shed" / "sheds" / "company"
 
 
 FORMATTED = """\
@@ -194,13 +194,16 @@ def test_removing_the_last_shed_empties_the_file(config_file):
 
 
 def test_storage_root_defaults_to_home(home):
-    assert configlib.storage_root() == home / ".shed"
+    assert configlib.storage_root() == home / ".git-shed"
 
 
 def test_storage_root_override(home, tmp_path, monkeypatch):
     monkeypatch.setenv("GIT_SHED_ROOT", str(tmp_path / "elsewhere"))
     assert configlib.storage_root() == tmp_path / "elsewhere"
-    assert configlib.shed_path("company") == tmp_path / "elsewhere" / "company"
+    assert configlib.config_path() == tmp_path / "elsewhere" / "config.toml"
+    assert (
+        configlib.shed_path("company") == tmp_path / "elsewhere" / "sheds" / "company"
+    )
 
 
 def test_storage_root_override_expands_a_tilde(home, monkeypatch):
@@ -210,7 +213,7 @@ def test_storage_root_override_expands_a_tilde(home, monkeypatch):
 
 def test_a_blank_override_is_ignored(home, monkeypatch):
     monkeypatch.setenv("GIT_SHED_ROOT", "  ")
-    assert configlib.storage_root() == home / ".shed"
+    assert configlib.storage_root() == home / ".git-shed"
 
 
 @pytest.mark.parametrize("value", ["sheds", "./sheds", "../sheds"])

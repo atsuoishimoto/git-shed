@@ -8,18 +8,18 @@ import pytest
 
 @pytest.fixture
 def home(tmp_path, monkeypatch):
-    """An isolated HOME so that ~/.shed and the config file are per-test."""
+    """An isolated HOME so that ~/.git-shed is per-test."""
     home = tmp_path / "home"
-    (home / ".config").mkdir(parents=True)
+    home.mkdir(parents=True)
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setenv("USERPROFILE", str(home))
-    monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
+    monkeypatch.delenv("GIT_SHED_ROOT", raising=False)
     return home
 
 
 @pytest.fixture
 def config_file(home):
-    return home / ".config" / "git-shed" / "config.toml"
+    return home / ".git-shed" / "config.toml"
 
 
 def write_config(path: Path, text: str) -> None:

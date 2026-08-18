@@ -12,14 +12,16 @@ responses, scratch code, work notes for an AI, test data — things you want nex
 to a repository but not inside it.
 
 ```text
-~/.shed/
-├── company/
-└── backend/
+~/.git-shed/
+├── config.toml
+└── sheds/
+    ├── company/
+    └── backend/
 
 ~/src/foo/
 └── .shed/
-    ├── company -> ~/.shed/company
-    └── backend -> ~/.shed/backend
+    ├── company -> ~/.git-shed/sheds/company
+    └── backend -> ~/.git-shed/sheds/backend
 ```
 
 The real data lives outside the clone, so `rm -rf` on the clone keeps it, every
@@ -56,14 +58,14 @@ Create shed:
   name:  api
   match:
     - github.com/acme/api
-  path:  /home/user/.shed/api
+  path:  /home/user/.git-shed/sheds/api
 
 Create this shed? (y/n) y
 Created shed:
   api
 
 Linked:
-  .shed/api -> /home/user/.shed/api
+  .shed/api -> /home/user/.git-shed/sheds/api
 ```
 
 Write whatever you want under the link. It lives outside the clone, and Git
@@ -83,17 +85,17 @@ $ cd ../api-hotfix
 $ git shed sync
 
 Linked:
-  .shed/api -> /home/user/.shed/api
+  .shed/api -> /home/user/.git-shed/sheds/api
 
 $ cat .shed/api/notes.md
 # debugging notes
 ```
 
-Delete either working tree and `~/.shed/api` stays where it is.
+Delete either working tree and `~/.git-shed/sheds/api` stays where it is.
 
 ## Configuration
 
-`~/.config/git-shed/config.toml` (or `$XDG_CONFIG_HOME/git-shed/config.toml`):
+`~/.git-shed/config.toml` (or `$GIT_SHED_ROOT/config.toml`):
 
 ```toml
 [[shed]]
@@ -120,11 +122,13 @@ digits, `.`, `_` and `-`, and is at most 64 characters — the safe shape for a
 directory name on every platform. Windows device names (`CON`, `NUL`, ...) and
 a trailing `.` are rejected.
 
-The data of a shed lives at `~/.shed/<name>`, by convention rather than by
-configuration. `GIT_SHED_ROOT` moves that root elsewhere, for the whole tool:
+The data of a shed lives at `~/.git-shed/sheds/<name>`, by convention rather
+than by configuration. `GIT_SHED_ROOT` moves the whole root — the
+configuration file and the shed data — elsewhere, for the whole tool:
 
 ```bash
-export GIT_SHED_ROOT=/data/sheds        # -> /data/sheds/company
+export GIT_SHED_ROOT=/data/git-shed     # -> /data/git-shed/config.toml
+                                        #    /data/git-shed/sheds/company
 ```
 
 A leading `~` is expanded, since the variable is often set where a shell does
@@ -147,7 +151,7 @@ git shed remove company 'github.com/other/*'   # drops only these patterns
 git shed status
 git shed list              # matching sheds and their patterns
 git shed list --all        # every defined shed and its patterns
-git shed path company      # /home/user/.shed/company
+git shed path company      # /home/user/.git-shed/sheds/company
 git shed open company      # open it in the file manager
 ```
 
@@ -176,7 +180,7 @@ data). With patterns after the name it removes only those patterns and keeps
 the shed; naming a pattern the shed does not have is an error.
 
 `git shed sync` resolves the identities of the repository, creates
-`~/.shed/<name>` and `repo/.shed/<name>` for every matching shed, drops the
+`~/.git-shed/sheds/<name>` and `repo/.shed/<name>` for every matching shed, drops the
 links that no longer match, and adds `/.shed/` to `.git/info/exclude`.
 `.gitignore` is never touched.
 
@@ -184,7 +188,7 @@ It reports what it did:
 
 ```text
 Linked:
-  .shed/company -> /home/user/.shed/company
+  .shed/company -> /home/user/.git-shed/sheds/company
 
 Unlinked:
   .shed/old-shed
@@ -201,7 +205,7 @@ allowed), which is what keeps `sync` from dropping the link again:
 $ git shed link scratch
 
 Linked:
-  .shed/scratch -> /home/user/.shed/scratch
+  .shed/scratch -> /home/user/.git-shed/sheds/scratch
 ```
 
 The shed does not have to be defined in the configuration: a name whose data
@@ -232,7 +236,7 @@ Create shed:
   name:  company
   match:
     - github.com/acme/*
-  path:  /home/user/.shed/company
+  path:  /home/user/.git-shed/sheds/company
 
 Create this shed? (y/n) y
 ```

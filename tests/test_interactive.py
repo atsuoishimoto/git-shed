@@ -31,11 +31,11 @@ def test_sync_offers_to_create_a_shed(make_repo, home, monkeypatch, answers, cap
     shed = configlib.load(configlib.config_path()).get("company")
     assert shed.match == ("github.com/acme/*",)
     assert (root / ".shed" / "company").is_symlink()
-    assert (home / ".shed" / "company").is_dir()
+    assert (home / ".git-shed" / "sheds" / "company").is_dir()
     out = capsys.readouterr().out
     assert out.endswith(
         "Created shed:\n  company\n"
-        f"\nLinked:\n  .shed/company -> {home / '.shed' / 'company'}\n"
+        f"\nLinked:\n  .shed/company -> {home / '.git-shed' / 'sheds' / 'company'}\n"
     )
 
 
@@ -152,7 +152,7 @@ def test_existing_shed_data_is_pointed_out(
 ):
     root = make_repo(url="git@github.com:acme/foo.git")
     monkeypatch.chdir(root)
-    existing = home / ".shed" / "company"
+    existing = home / ".git-shed" / "sheds" / "company"
     existing.mkdir(parents=True)
     (existing / "notes.md").write_text("kept", encoding="utf-8")
     answers("y", "company", "github.com/acme/*", "y")
@@ -173,7 +173,8 @@ def test_a_new_path_is_shown_without_a_note(
 
     assert main(["sync"]) == 0
 
-    assert f"  path:  {home / '.shed' / 'company'}\n" in capsys.readouterr().out
+    company = home / ".git-shed" / "sheds" / "company"
+    assert f"  path:  {company}\n" in capsys.readouterr().out
 
 
 def test_a_file_in_the_way_is_pointed_out(
@@ -181,8 +182,10 @@ def test_a_file_in_the_way_is_pointed_out(
 ):
     root = make_repo(url="git@github.com:acme/foo.git")
     monkeypatch.chdir(root)
-    (home / ".shed").mkdir()
-    (home / ".shed" / "company").write_text("not a directory", encoding="utf-8")
+    (home / ".git-shed" / "sheds").mkdir(parents=True)
+    (home / ".git-shed" / "sheds" / "company").write_text(
+        "not a directory", encoding="utf-8"
+    )
     answers("y", "company", "github.com/acme/*", "n")
 
     assert main(["sync"]) == 0
