@@ -11,6 +11,21 @@ contents of a shed — only the links. The README is the authoritative
 description of user-visible behavior; `.plan/PLAN.md` is the original design
 document (in Japanese) and may lag behind the implementation.
 
+## Git workflow
+
+- Develop on the working branch designated for the session (e.g.
+  `claude/...`). Never commit to or push `main` directly.
+- Create the branch locally if it does not exist yet, and push with
+  `git push -u origin <branch-name>` — never to a different branch than the
+  designated one.
+- If a push fails due to network errors, retry up to 4 times with exponential
+  backoff (2s, 4s, 8s, 16s).
+- Do not open a pull request unless explicitly asked to.
+- If the pull request for the designated branch has already been merged, do
+  not stack new commits on the merged history: restart the branch from the
+  latest `main` (`git fetch origin main && git checkout -B <branch-name>
+  origin/main`) and treat follow-up work as a fresh change.
+
 ## Commands
 
 ```bash
