@@ -1,7 +1,7 @@
 """Loading and editing the shed configuration file.
 
-The configuration lives in ``~/.config/git-shed/config.toml`` (or under
-``$XDG_CONFIG_HOME``) and looks like::
+The configuration lives in ``~/.git-shed/config.toml`` (or under
+``$GIT_SHED_ROOT``) and looks like::
 
     [[shed]]
     name = "company"
@@ -89,21 +89,19 @@ def _as_tuple(identities: Iterable[str]) -> tuple[str, ...]:
 
 def config_path() -> Path:
     """Return the path of the configuration file."""
-    xdg = os.environ.get("XDG_CONFIG_HOME")
-    base = Path(xdg) if xdg else Path.home() / ".config"
-    return base / "git-shed" / "config.toml"
+    return storage_root() / "config.toml"
 
 
 def storage_root() -> Path:
-    """Return the directory holding the shed data.
+    """Return the directory holding the configuration and the shed data.
 
-    ``~/.shed`` by convention; ``GIT_SHED_ROOT`` overrides it. A leading ``~``
-    is expanded, since the variable is often set where a shell does not expand
-    it, but the value has to denote an absolute path.
+    ``~/.git-shed`` by convention; ``GIT_SHED_ROOT`` overrides it. A leading
+    ``~`` is expanded, since the variable is often set where a shell does not
+    expand it, but the value has to denote an absolute path.
     """
     override = os.environ.get(STORAGE_ROOT_ENV, "").strip()
     if not override:
-        return Path.home() / ".shed"
+        return Path.home() / ".git-shed"
 
     root = Path(os.path.expanduser(override))
     if not root.is_absolute():
@@ -113,7 +111,7 @@ def storage_root() -> Path:
 
 def shed_path(name: str) -> Path:
     """Return the data directory of the shed called ``name``."""
-    return storage_root() / name
+    return storage_root() / "sheds" / name
 
 
 def validate_name(name: str) -> str:

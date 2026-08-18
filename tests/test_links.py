@@ -36,10 +36,11 @@ def test_link_adds_an_entry_and_the_link(repo, home, capsys):
     assert main(["link", "scratch"]) == 0
 
     link = repo / ".shed" / "scratch"
-    assert Path(os.readlink(link)) == home / ".shed" / "scratch"
+    assert Path(os.readlink(link)) == home / ".git-shed" / "sheds" / "scratch"
     assert listed(repo) == ("scratch",)
     assert (repo / ".shed" / ".sheds").read_text(encoding="utf-8") == "scratch\n"
-    assert f"  .shed/scratch -> {home / '.shed' / 'scratch'}" in capsys.readouterr().out
+    scratch = home / ".git-shed" / "sheds" / "scratch"
+    assert f"  .shed/scratch -> {scratch}" in capsys.readouterr().out
 
 
 def test_sync_keeps_an_explicit_link(repo, capsys):
@@ -90,7 +91,7 @@ def test_unlink_drops_the_entry_and_the_link(repo, home, capsys):
 
     assert not (repo / ".shed" / "scratch").exists()
     assert not (repo / ".shed" / ".sheds").exists()
-    assert (home / ".shed" / "scratch").is_dir()  # data survives
+    assert (home / ".git-shed" / "sheds" / "scratch").is_dir()  # data survives
     assert "Unlinked:\n  .shed/scratch\n" in capsys.readouterr().out
 
 
@@ -177,7 +178,7 @@ def test_comments_and_blanks_are_ignored(repo):
 
 
 def test_link_accepts_an_undefined_shed_that_exists(repo, home, capsys):
-    existing = home / ".shed" / "loose"
+    existing = home / ".git-shed" / "sheds" / "loose"
     existing.mkdir(parents=True)
     (existing / "notes.md").write_text("kept", encoding="utf-8")
 
@@ -189,7 +190,7 @@ def test_link_accepts_an_undefined_shed_that_exists(repo, home, capsys):
 
 
 def test_sync_keeps_a_link_to_an_undefined_shed(repo, home, capsys):
-    (home / ".shed" / "loose").mkdir(parents=True)
+    (home / ".git-shed" / "sheds" / "loose").mkdir(parents=True)
     main(["link", "loose"])
     capsys.readouterr()
 
@@ -209,7 +210,7 @@ def test_link_refuses_a_name_with_neither_definition_nor_directory(repo, capsys)
 
 
 def test_status_shows_an_undefined_linked_shed(repo, home, capsys):
-    (home / ".shed" / "loose").mkdir(parents=True)
+    (home / ".git-shed" / "sheds" / "loose").mkdir(parents=True)
     main(["link", "loose"])
     capsys.readouterr()
 
@@ -219,8 +220,9 @@ def test_status_shows_an_undefined_linked_shed(repo, home, capsys):
 
 
 def test_path_of_an_undefined_shed_that_exists(repo, home, capsys):
-    (home / ".shed" / "loose").mkdir(parents=True)
+    (home / ".git-shed" / "sheds" / "loose").mkdir(parents=True)
 
     assert main(["path", "loose"]) == 0
 
-    assert capsys.readouterr().out.strip() == str(home / ".shed" / "loose")
+    loose = home / ".git-shed" / "sheds" / "loose"
+    assert capsys.readouterr().out.strip() == str(loose)
