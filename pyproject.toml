@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "git-shed"
+version = "0.1.0"
+description = "A repository-aware link manager for local files kept outside Git"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["tomlkit>=0.11"]
+license = { text = "MIT" }
+authors = [{ name = "Atsuo Ishimoto" }]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Version Control :: Git",
+]
+
+[project.scripts]
+git-shed = "git_shed.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.5", "uv-matrix>=0.0.6"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+# The test suite runs on every supported interpreter; ruff runs on its own.
+[tool.uv-matrix.matrix.test]
+python-version = ["3.11", "3.12", "3.13", "3.14"]
+tasks = ["pytest"]
+
+[tool.uv-matrix.tasks.pytest]
+extras = ["dev"]
+run = "pytest {{ posargs }}"
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
