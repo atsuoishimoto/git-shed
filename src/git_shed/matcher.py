@@ -4,6 +4,9 @@ Identities are treated as "/" separated segments::
 
     *   matches exactly one segment
     **  matches zero or more segments
+
+A "*" may also cover part of a segment ("acme-*", "repo_*"); each segment is
+matched with :func:`fnmatch.fnmatchcase`.
 """
 
 from __future__ import annotations

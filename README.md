@@ -297,10 +297,16 @@ Identities are matched segment by segment:
 **   zero or more segments
 ```
 
+A `*` can also stand for part of a segment, so a naming convention is
+enough to group repositories:
+
 ```text
-github.com/acme/foo
-github.com/acme/*
-gitlab.com/company/**
+github.com/acme/foo        exactly this repository
+github.com/acme/*          every repository of acme
+github.com/acme-*/api      the api repository of acme-jp, acme-us, ...
+github.com/acme/repo_*     acme repositories named repo_...
+*/acme/*                   acme on any host
+gitlab.com/company/**      company and everything below its subgroups
 ```
 
 Matching is case-insensitive, and several sheds may match the same repository —
